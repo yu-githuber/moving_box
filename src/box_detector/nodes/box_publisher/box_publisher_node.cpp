@@ -36,6 +36,8 @@
 
 static pcl::PointCloud<pcl::PointXYZ>::Ptr plane_cloud(new pcl::PointCloud<pcl::PointXYZ>());
 static pcl::PointCloud<pcl::PointXYZ>::Ptr box_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+static pcl::PointCloud<pcl::PointXYZ>::Ptr up_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+static pcl::PointCloud<pcl::PointXYZ>::Ptr trans_up_cloud(new pcl::PointCloud<pcl::PointXYZ>());
 static pcl::PointCloud<pcl::PointXYZ>::Ptr filter_box_cloud(new pcl::PointCloud<pcl::PointXYZ>());
 static pcl::PointCloud<pcl::PointXYZ>::Ptr whole_cloud(new pcl::PointCloud<pcl::PointXYZ>());
 static pcl::PointCloud<pcl::PointXYZ>::Ptr transform_cloud(new pcl::PointCloud<pcl::PointXYZ>());
@@ -84,12 +86,23 @@ int main(int argc, char **argv)
         }
     }
 
-    pcl::CropBox<pcl::PointXYZ> box_filter(true);
-    box_filter.setMin(Eigen::Vector4f(-0.48, -0.48, 0.02, 1.0));
-    box_filter.setMax(Eigen::Vector4f(0.48, 0.48, 0.98, 1.0));
-    box_filter.setNegative(true);
-    box_filter.setInputCloud(box_cloud);
-    box_filter.filter(*filter_box_cloud);
+    // pcl::CropBox<pcl::PointXYZ> box_filter(true);
+    // box_filter.setMin(Eigen::Vector4f(-0.48, -0.48, 0.02, 1.0));
+    // box_filter.setMax(Eigen::Vector4f(0.48, 0.48, 0.98, 1.0));
+    // box_filter.setNegative(true);
+    // box_filter.setInputCloud(box_cloud);
+    // box_filter.filter(*filter_box_cloud);
+
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 11; j++)
+        {
+            p_box.x = 0.1 * i - 0.5;
+            p_box.y = 0.1 * j - 0.5;
+            p_box.z = 1;
+            up_cloud->push_back(p_box);
+        }
+    }
 
     /*
     //generate box_cloud (method two)
@@ -159,7 +172,8 @@ int main(int argc, char **argv)
         }
     }*/
 
-    *transform_cloud = *filter_box_cloud;
+    *transform_cloud = *box_cloud;
+    *trans_up_cloud = *up_cloud;
 
     ros::Rate ros_rate(5);
 
@@ -177,7 +191,8 @@ int main(int argc, char **argv)
             Eigen::AngleAxisf rot_y(0, Eigen::Vector3f::UnitY());
             Eigen::AngleAxisf rot_z(_tf_yaw, Eigen::Vector3f::UnitZ());
             trans = (tl * rot_z * rot_y * rot_x).matrix();
-            pcl::transformPointCloud(*filter_box_cloud, *transform_cloud, trans);
+            pcl::transformPointCloud(*box_cloud, *transform_cloud, trans);
+            pcl::transformPointCloud(*up_cloud, *trans_up_cloud, trans);
 
             count = 0;
         }
@@ -214,6 +229,8 @@ int main(int argc, char **argv)
         square_hull.setCropOutside(false);
         square_hull.setDim(2);
         square_hull.filter(*output_cloud);
+
+        *output_cloud = *output_cloud + *trans_up_cloud;
 
         /*
         //remove bottom cloud (method two)
