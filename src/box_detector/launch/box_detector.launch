@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="box_detector" type="box_publisher" name="box_publisher" output="screen" />
+    <node pkg="box_detector" type="box_subscriber" name="box_subscriber" output="screen" />
+
+</launch>
