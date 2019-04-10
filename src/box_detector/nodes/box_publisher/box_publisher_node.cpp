@@ -47,6 +47,7 @@ static sensor_msgs::PointCloud2 cloud_msg;
 static ros::Publisher cloud_pub;
 
 static Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
+static float _tf_x, _tf_y, _tf_yaw;
 
 using namespace std;
 
@@ -183,9 +184,9 @@ int main(int argc, char **argv)
     {
         if (count == 4)
         {
-            float _tf_x = 0.1 * (rand() % 3 - 1);
-            float _tf_y = 0.1 * (rand() % 3 - 1);
-            float _tf_yaw = (rand() % 90) * M_PI / 180;
+            _tf_x = 0.1 * (rand() % 3 - 1);
+            _tf_y = 0.1 * (rand() % 3 - 1);
+            _tf_yaw = (rand() % 90) * M_PI / 180;
             Eigen::Translation3f tl(_tf_x, _tf_y, 0);
             Eigen::AngleAxisf rot_x(0, Eigen::Vector3f::UnitX());
             Eigen::AngleAxisf rot_y(0, Eigen::Vector3f::UnitY());
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
 
         *whole_cloud = *plane_cloud + *transform_cloud;
 
-        
+        /*
         //remove bottom cloud (method one)
         pcl::PointCloud<pcl::PointXYZ>::Ptr hull_cloud(new pcl::PointCloud<pcl::PointXYZ>());
         pcl::PointCloud<pcl::PointXYZ>::Ptr trans_hull_cloud(new pcl::PointCloud<pcl::PointXYZ>());
@@ -230,39 +231,22 @@ int main(int argc, char **argv)
         square_hull.setDim(2);
         square_hull.filter(*output_cloud);
 
-        *output_cloud = *output_cloud + *trans_up_cloud;
+        *output_cloud = *output_cloud + *trans_up_cloud;*/
 
-        /*
+        
         //remove bottom cloud (method two)
         pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr crop_cloud(new pcl::PointCloud<pcl::PointXYZI>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr trans_crop_cloud(new pcl::PointCloud<pcl::PointXYZI>());
-        //pcl::PointXYZI min_pt(-0.48, -0.48, -0.02, 1.0);
-        //pcl::PointXYZI max_pt(0.48, 0.48, 0.02, 1.0);
-        pcl::PointXYZI min_pt, max_pt;
-        min_pt.x = -0.48;
-        min_pt.y = -0.48;
-        min_pt.z = -0.02;
-        min_pt.intensity = 1;
-        max_pt.x = 0.48;
-        max_pt.y = 0.48;
-        max_pt.z = 0.02;
-        max_pt.intensity = 1;
-        crop_cloud->points.push_back(min_pt);
-        crop_cloud->points.push_back(max_pt);
-        
-        pcl::transformPointCloud(*crop_cloud, *trans_crop_cloud, trans);
-        cout << trans << endl;
-        cout << trans_crop_cloud->points[0] << endl;
-        cout << trans_crop_cloud->points[1] << endl;
-        cout << "++++++++++++++++++++" << endl;
+        pcl::PointXYZ min_pt(-0.48, -0.48, -0.02);
+        pcl::PointXYZ max_pt(0.48, 0.48, 0.02);
 
         pcl::CropBox<pcl::PointXYZ> crop_filter(true);
-        crop_filter.setMin(Eigen::Vector4f(trans_crop_cloud->points[0].x, trans_crop_cloud->points[0].y, trans_crop_cloud->points[0].z, 1.0));
-        crop_filter.setMax(Eigen::Vector4f(trans_crop_cloud->points[1].x, trans_crop_cloud->points[1].y, trans_crop_cloud->points[1].z, 1.0));
+        crop_filter.setMin(Eigen::Vector4f(-0.48, -0.48, -0.02,1));
+        crop_filter.setMax(Eigen::Vector4f(0.48, 0.48, 0.02,1));
+        crop_filter.setRotation(Eigen::Vector3f(0,0,_tf_yaw));
+        crop_filter.setTranslation(Eigen::Vector3f(_tf_x,_tf_y,0));
         crop_filter.setNegative(true);
         crop_filter.setInputCloud(whole_cloud);
-        crop_filter.filter(*output_cloud);*/
+        crop_filter.filter(*output_cloud);
 
         for (int i = 0; i < (static_cast<int>(output_cloud->size())); i++)
         {
