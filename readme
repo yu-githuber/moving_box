@@ -1,4 +1,0 @@
-You can start the project by using command 
-catkin_make
-source devel/setup.bash
-roslaunch box_detector box_detector.launch
