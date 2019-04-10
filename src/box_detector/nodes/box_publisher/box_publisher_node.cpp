@@ -203,7 +203,7 @@ int main(int argc, char **argv)
 
         *whole_cloud = *plane_cloud + *transform_cloud;
 
-        /*
+        
         //remove bottom cloud (method one)
         pcl::PointCloud<pcl::PointXYZ>::Ptr hull_cloud(new pcl::PointCloud<pcl::PointXYZ>());
         pcl::PointCloud<pcl::PointXYZ>::Ptr trans_hull_cloud(new pcl::PointCloud<pcl::PointXYZ>());
@@ -230,9 +230,9 @@ int main(int argc, char **argv)
         square_hull.setDim(2);
         square_hull.filter(*output_cloud);
 
-        *output_cloud = *output_cloud + *trans_up_cloud;*/
+        *output_cloud = *output_cloud + *trans_up_cloud;
 
-        
+        /*
         //remove bottom cloud (method two)
         pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>());
         pcl::PointCloud<pcl::PointXYZI>::Ptr crop_cloud(new pcl::PointCloud<pcl::PointXYZI>());
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
         crop_filter.setMax(Eigen::Vector4f(trans_crop_cloud->points[1].x, trans_crop_cloud->points[1].y, trans_crop_cloud->points[1].z, 1.0));
         crop_filter.setNegative(true);
         crop_filter.setInputCloud(whole_cloud);
-        crop_filter.filter(*output_cloud);
+        crop_filter.filter(*output_cloud);*/
 
         for (int i = 0; i < (static_cast<int>(output_cloud->size())); i++)
         {
